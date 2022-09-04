@@ -1,0 +1,102 @@
+---
+title: "Chapter 2 Assignment"
+output: html_document
+date: "2022-09-04"
+---
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+olympics<- read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-07-27/olympics.csv')
+glimpse(olympics)
+table(olympics$medal)
+```
+
+##Question1 
+
+```{r}
+gold_medalists <- olympics %>%
+  dplyr:::filter.data.frame(medal == "Gold")
+glimpse(gold_medalists)
+
+```
+
+This effectively filtered the original data set into a set which only includes those who were gold medalists. In this instance, the data-set has 13372 rows, which corresponds to the table out-put earlier.
+
+```{r}
+ggplot(data = gold_medalists, mapping = aes(x = year, y = age)) + 
+  geom_point()
+
+```
+
+A geom_point data set seemed to provide the most clarity to isolate the set of individuals who won a gold-medal across different time periods, and ages. It seems as if the ages have gotten younger of the years, which would make sense due to increasing training regiments. As olympic sports become more and more about pulling every last bit of potential, it would be harder and harder to compete into later ages.To fix the overplotting issue, there could be two easy fixes based on the Modern Dive Textbook. First, changing the transparency by using alpha. This would provide clarity on the density of certain ages. Second, I could jitter the points, which means to give each point a small nudge, I think this would would probably provide a little less clarity but might solve the overplotting problem
+
+
+```{r}
+ggplot(data = gold_medalists, mapping = aes(x = year, y = age)) + 
+  geom_point(alpha = 0.2)
+```
+
+First, i can include transparency as a solution.
+```{r}
+ggplot(data = gold_medalists, mapping = aes(x = year, y = age)) + 
+  geom_jitter(width = .5, height = .1)
+```
+
+Second, jittering which provides a little more clarity, but results in a much uglier graph.
+
+
+##Question 3
+```{r}
+us_medals <- gold_medalists %>% 
+  filter(noc == "USA") %>% 
+  group_by(year) %>% 
+  summarise(num_medals = n())
+ggplot(data = us_medals, mapping = aes(x = year, y = num_medals)) + 
+  geom_line()
+```
+
+As evidenced by the graph, 1984 was the most successful year for American Olympic Success. The sharp declines between summer and winter Olympics can indicate two things. First, there are less events in the winter Olympics, and thus less to medal in. Second, the U.S. has historically been competitively weaker in winter Olympics
+
+##Question 4
+```{r}
+two_events <- gold_medalists %>%
+  filter(
+    event == "Gymnastics Men's Individual All-Around"  |
+      event == "Gymnastics Women's Individual All-Around" |
+      event == "Athletics Women's 100 metres"   |
+      event == "Athletics Men's 100 metres"
+  ) 
+Gymnastic_events <- two_events %>%
+  filter(
+    sport == "Gymnastics")
+
+ggplot(data = Gymnastic_events, mapping = aes(x = age)) + 
+  geom_histogram()
+
+ggplot(data = Gymnastic_events, mapping = aes(x = age)) + 
+  geom_histogram()+
+  facet_wrap(vars(sex))
+```
+
+The distribution tends to indicate that medals tend to peak between 22 and 29, with some substantial success earlier. If I separate those between female and male athletes, then its revealed that female athletes tend to be substantially younger than their male counter-parts.Male atheletes tend to be able to for much longer, and be competitvely successful while having less success at a younger age.
+
+##Question 5
+```{r}
+ggplot(data = two_events, mapping = aes(x = event, y = height)) + 
+  geom_boxplot() +
+  theme(text = element_text(size = 7))
+```
+
+As is expected, gymnastics events tends to skew towards shorter individuals. While Athletic events tend to skew to taller individuals, due to strategic incentive.
+
+##Question 6
+
+```{r}
+us_medalists <- gold_medalists %>% 
+  filter(noc == "USA")
+ggplot(data = us_medalists, mapping = aes(x = year, fill = sex)) +
+  geom_bar(position = "dodge")
+```
+
+The most immediate thing to note from this bar plot is the direct increase in female success during the 1980's and beyond. This makes sense as the 1980's were marked by the increase in events available to women athletes. In addition, the IOC required all new sports to have an option for female competitors. 

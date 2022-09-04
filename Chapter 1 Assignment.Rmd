@@ -1,0 +1,78 @@
+---
+title: "Chapter 1 Assignment"
+output:
+  html_document:
+    df_print: paged
+date: "2022-09-04"
+---
+
+
+```{r}
+library(causact)
+library(dplyr)
+library(igraph)
+```
+##Question 3
+
+```{r}
+```
+
+As the assignment asked, I ran "as_data_frame", using the parameters of the dplyr version. It gave me an error because as the message from the earlier section indicated, igraph masked "dpylr." Naturally, I have to run it as the dpylr version. 
+
+```{r}
+df <- dplyr::as_data_frame(x = c(1,2,3))
+glimpse(df)
+```
+##Question 3
+
+```{r}
+x = c(5,6,2,7,9,1)
+n_distinct(x)
+```
+Question 3 asked me to use and define n_distinct, which pretty simply returns the amount of unique values within a vector. When applied to "x", n_distinct returns 6 because are 6 unique valuees.
+
+##Question 4
+```{r}
+glimpse(baseballData)
+bb = baseballData
+```
+Running glimpse on the data reveals that there are 5 columns and 12,145.Those 5 columns refer to $Date, $Home, $Visitor, $HomeScore, $VisitorScore. Home refers to the home team. Homescore refers to the score of the home team in that game.
+##Question 5
+```{r}
+baseballData[1,]
+```
+In this instance, one row in the data represents an individual game.
+
+```{r}
+baseballData[,2:3] %>% head()
+
+```
+
+If we wanted to select certain columns, such as $Home and $Visitor, then we can select them by using the space after the comma. These two columns represent the two teams in each individual game, the home team and the away team.
+
+##Question 6
+```{r}
+name <-
+  c(
+    "Wayne Gretzky",
+    "Gordie Howe",
+    "Jaromir Jagr",
+    "Brett Hull",
+    "Marcel Dionne",
+    "Phil Esposito" ,
+    "Mike Gartner",
+    "Alex Ovechkin",
+    "Mark Messier" ,
+    "Steve Yzerman"
+  )
+
+goals <- c(894, 801, 766, 741, 731, 717, 708, 700, 694, 692)
+
+year_started <- c(1979, 1946, 1990, 1986, 1971, 1963, 1979, 2005, 1979, 1983)
+df1 <- tibble( 
+  player_names = name, 
+  goals_scored = goals,
+  yearstarted = year_started) 
+glimpse(df1)
+```
+After creating a new data frame, creatively called df1, I successfully glimpsed the data frame created via tibble. It included what I expected, that is the information given to me.
