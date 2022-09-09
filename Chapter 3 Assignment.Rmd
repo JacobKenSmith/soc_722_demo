@@ -1,0 +1,138 @@
+---
+title: "Chapter 3 Assignment"
+author: "Jacob Smith"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    df_print: paged
+---
+```{r}
+library(tidyverse)
+
+```
+##Question 1
+```{r}
+mario_kart <- read.csv("world_records.csv")
+three_laps <- mario_kart %>% 
+  filter(type == "Three Lap")
+non_rainbow <- three_laps %>%
+  filter(track != "Rainbow Road")
+rainbow_rat <- three_laps %>%
+  filter(track == "Rainbow Road")
+```
+
+As to provide clarity between different tracks, I created 3 data sets which house information regarding three_lap records. The first houses all records. The second houses all records which dont include the infamous track rainbow road. The third houses all records for rainbow road.
+
+##Question 2
+```{r}
+summary_rainbow <- rainbow_rat |> 
+  summarize(mean = mean(time), std_dev = sd(time))
+summary_all <- non_rainbow |>
+  summarize(mean = mean(time), std_dev = sd(time))
+
+```
+The average rate of rainbow road is over double that of all other routes. The standard deviation follows with 91.8 for rainbow road, and 52.97595 for non-rainbow roads. This indicates it was a good idea to separate rainbow road from the rest of the data set due to stark differences.
+ 
+
+
+##Question 3
+```{r}
+
+three_lap_summary <- three_laps |> 
+  group_by(track) |> 
+  summarize(count = n())
+three_lap_summary |> 
+  arrange(count)
+
+```
+
+I went back into the three_laps dataframe, and grouped by track, then used the 'summarize' function to count each individual record. As shown, it is Toad's turnpike which had the most records
+
+##Question 4
+```{r}
+Player_count <- three_laps |> 
+  group_by(player, track) |> 
+  summarize(count = n()) 
+
+Player_count |> 
+  arrange(desc(count))
+
+  
+
+```
+
+As evidenced by the resulting tibble, Penev, on Choco Mountain, was the most prolific racer on any single map.
+
+##Question 5
+```{r}
+Avg_time <- three_laps |> 
+  group_by(track) |> 
+  summarize(meantime = mean(time)) 
+  
+
+Avg_time |> 
+  arrange(meantime)
+```
+
+Rainbow road has the longest average time with 275.63364
+, compared to the next highest of Wario Stadiun which had an average time of 213.95873. 
+
+   
+```{r}
+best_times <- three_laps %>% 
+  group_by(track) %>% 
+  arrange(time) %>% 
+  slice(1) %>% 
+  select(track, time)
+```
+
+In the pursuit of further data clarity, I then analyzed the best times on all tracks. The 17.29 which holds the world record for choco mountain is absurdly short, and is the shortest time for all tracks
+
+  
+##Question 6
+
+```{r}
+
+three_laps <- three_laps |>  
+    mutate(long_duration =if_else(record_duration > 100, 1, 0))
+
+long_durations <- three_laps |> 
+  group_by(player) |> 
+  summarize(count = n()) 
+
+long_durations |> 
+  arrange(desc(count))
+  
+
+
+```
+
+Somewhat absurdly, MR has over 174 records which lasted over 100 days. Penev was a close second with 172. 
+
+## Question 7 
+
+```{r}
+drivers <- read_csv("drivers.csv")
+laps_joined <- three_laps |> 
+  left_join(drivers, by = "player") |> 
+  drop_na()
+
+
+ggplot(data = laps_joined, 
+       aes(x = nation)) +
+  geom_bar() +
+  labs(x = "Nations", y = "records") +
+  theme(text = element_text(size = 6))   
+
+
+
+
+
+```
+
+
+
+After loading in drivers, these were then joined with a left_join function so that the drivers matched up with their respective nations. However, this didn't necessarily join all the functions correctly. In the drivers document, it separates drivers according to different years, I.E. Penez has entries for many different years, and their numbers of records change based on the years. Because left_join doesn't connect multiple years, and the dates column using different formats, these don't match up in the joined folder. 
+
+After plotting these into a bar-graph, its shown that the U.S. has   the most records, with the netherlands being a close second.
+
