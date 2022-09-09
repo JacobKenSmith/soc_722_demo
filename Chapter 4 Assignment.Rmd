@@ -3,6 +3,7 @@ title: "Chapter 4 Assignment"
 author: "Jacob Smith"
 date: "`r Sys.Date()`"
 output:
+  pdf_document: default
   html_document:
     df_print: paged
 ---
@@ -64,4 +65,4 @@ ggplot(average_pay, aes(x = year, y = mean, col = position)) +
   labs (x = "Year", y = "Average Salary")
 ```
 
-These were the mapped to provide a clearer image across different positions
+These were the mapped to provide a clearer image across different positions. The two immediate observations were that the valuations of both defense and offensive line-man increased at relatively similar rates starting in 2016. Secondly, the valuation of special teams, tight ends, and running backs have been relatively stagnant. Running backs even have decreased in value over the years. Overall, these track with the ongoing optimization of salaries due to analytics taking priority in salary management
