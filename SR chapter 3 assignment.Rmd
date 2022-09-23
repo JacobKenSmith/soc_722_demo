@@ -1,0 +1,241 @@
+---
+title: "SR CH3 Assignment"
+output: html_document
+date: "2022-09-23"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+devtools::install_github("rmcelreath/rethinking")
+
+```
+
+```{r}
+library(rethinking)
+library(tidyverse)
+```
+
+
+```{r}
+n <- 1000
+n_success <- 6
+n_trials  <- 9
+
+(
+  d <-
+  tibble(p_grid = seq(from = 0, to = 1, length.out = n),
+         # note we're still using a flat uniform prior
+         prior  = 1) %>% 
+  mutate(likelihood = dbinom(n_success, size = n_trials, prob = p_grid)) %>% 
+  mutate(posterior = (likelihood * prior) / sum(likelihood * prior))
+)  
+  # how many samples would you like?
+n_samples <- 1e4
+
+# make it reproducible
+set.seed(3)
+
+samples <-
+  d %>% 
+  slice_sample(n = n_samples, weight_by = posterior, replace = T)
+
+d %>% 
+  slice_sample(n = 1e6, weight_by = posterior, replace = T) %>% 
+  ggplot(aes(x = p_grid)) +
+  geom_density(fill = "black") +
+  scale_x_continuous("proportion of water (p)", limits = c(0, 1))
+```
+set up
+### Easy Questions
+
+## Question 1
+```{r}
+d %>% 
+  filter(p_grid < .2) %>% 
+  summarise(sum = n() / n_samples)
+
+```
+
+Only 2% of it lies below .02
+
+## Question 2
+
+```{r}
+samples %>%
+  filter(p_grid > .8) %>% 
+  summarise(sum = n() / n_samples)
+```
+
+Only 12.4% lies above .8
+
+## Question 3
+
+```{r}
+samples %>%
+  filter(p_grid > .2 & p_grid < .8) %>%  
+  summarise(sum = n() / n_samples)
+```
+
+As basic math would indicate, the other 87.6 percent fits within those two points.
+
+## Question 4
+```{r}
+(q_20 <- quantile(samples$p_grid, prob = .2))
+
+
+```
+
+20% of the posterior probability lies abolive .5215215.
+
+
+## Question 4
+
+```{r}
+(q_80 <- quantile(samples$p_grid, prob = .8))
+
+```
+Inversely, 20% of posterior probability lies above the p value of .7627628
+
+
+## Question 6
+
+```{r}
+
+rethinking::HPDI(samples$p_grid, prob = .66)
+
+```
+As requested, the narrowest interval of 66% is from  0.5255255 to 0.7947948 
+
+## Question 7
+
+```{r}
+library(tidybayes)
+
+median_qi(samples$p_grid, .width = .66)
+
+```
+The values of P for an 66% interval that is equal before and after, is 0.5045045 to 0.7757758
+
+### Medium Questions
+
+## Question 1
+
+```{r}
+n_success <- 8
+n_trials  <- 15
+
+new_d <-
+  d %>% 
+  mutate(likelihood = dbinom(n_success, size = n_trials, prob = p_grid)) %>% 
+  mutate(posterior = (likelihood * prior) / sum(posterior))
+set.seed(3)
+
+
+
+
+new_d %>% 
+ggplot(aes(x = p_grid, y = posterior)) +
+  geom_point() +
+  geom_line() +
+  labs(x = "probability of water",
+       y = "posterior probability") +
+  theme()
+```
+This just changes the code done above. It produces a slightly different output.
+
+## Question 2
+
+```{r}
+
+
+new_samples <-
+  new_d %>% 
+  slice_sample(n = n_samples, weight_by = posterior, replace = T)
+
+HPDI(new_samples$p_grid, prob = .9)
+```
+The 90 percent HPDI is betweeen .3393393 and 0.7267267
+
+## Question 3
+
+```{r}
+test <- rbinom(10000, size = 15, prob = new_samples$p_grid)
+mean(test == 8)
+simplehist(test)
+       
+```
+14.53% chance for it to be 8 observations of water
+## Question 4
+
+```{r}
+test2 <- rbinom(10000, size = 9, prob = new_samples$p_grid)
+mean(test2 == 6)
+simplehist(test2)
+```
+
+This one follows the same logic. It would result in a probability of 17.63 %. 
+
+## Question 6
+Time to redo them all.......... It makes me sad
+
+The set up and 3M1
+```{r}
+
+
+(
+  d8 <-
+  tibble(p_grid = seq(from = 0, to = 1, length.out = n),
+         prior  = ifelse(p_grid< .5, 0, 1)) %>% 
+  mutate(likelihood = dbinom(n_success, size = n_trials, prob = p_grid)) %>% 
+  mutate(posterior = (likelihood * prior) / sum(likelihood * prior))
+)  
+
+newnewsamples  <-
+  d8 %>% 
+  slice_sample(n = n_samples, weight_by = posterior, replace = T)
+
+
+d8 %>% 
+ggplot(aes(x = p_grid, y = posterior)) +
+  geom_point() +
+  geom_line() +
+  labs(x = "probability of water",
+       y = "posterior probability") +
+  theme()
+```
+# Redo 3M2
+```{r}
+HPDI(newnewsamples$p_grid, prob = 0.9)
+```
+The new HPDI goes from 0.5005005 to 0.7127127, an obviously narrowwer section.
+
+# Redo 3M3
+
+```{r}
+test3 <- rbinom(10000, size = 15, prob = newnewsamples$p_grid)
+mean(test3 == 8)
+simplehist(test3)
+```
+
+This one seemed to slightly shift the direction slightly to the right. It for example, now included 15 as an option. Furthermore, the percentage went to 15.69 percent which was a slight increase.
+
+# Redo 3M4
+```{r}
+test4 <- rbinom(10000, size = 9, prob = newnewsamples$p_grid)
+mean(test4 == 6)
+simplehist(test4)
+```
+This was one resulted in a larger increase. It went from 17.47% to 23.26%.
+
+
+## 3M6
+
+```{r}
+
+#????
+
+```
+Utterly unsure of how to do this one.

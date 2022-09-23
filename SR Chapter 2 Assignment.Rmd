@@ -1,0 +1,193 @@
+---
+title: "Stuff"
+output: html_document
+date: "2022-09-23"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+```{r}
+library(tidyverse)
+```
+
+## Question 1 
+The second one is the correct one.
+
+
+## Question 2
+Third third statement is the correect answer.
+
+The second question is just an inverse of the same statemeent. The first two are just different wordings for the first statement.The fourth statement isn't technically correct as it doesn't begin with the presuppisition that it is raising, it is just a correlative statement
+
+## Question 3 
+1 and 4 is correct
+
+As evidenced by the immediately prior questiom, 1 is correct.  2 is probability its raining given that its monday.  3 doesn't supposed that it is given that is raining.  4 inclusion of "/" after presumes that it is given, i.e. pg 36 (Still a little unsure of the mechniacs of that one.)  5 is inverted there so it would have to be either four or five. However, 5 would be the probability of rain if its monday. While 4 would be probability of monday if it is raining.
+
+## Question 4
+
+In simple, the statement refers to the fact that there is some defineable proportion of water that exists. Probability based on Bayesian analysis which attempts to estimate based on what might be true. This isn't an objective reality, but attempts to estimate what that objective reality could be.
+
+### Medium Problems
+
+## Question 1
+
+W, W, W.
+```{r}
+
+(
+  d1 <-
+    tibble(probability = seq(from = 0, to = 1, length.out = 20), 
+           prior = 1) %>%
+    mutate(likelihood = dbinom(3, size = 3, prob = probability)) %>%
+    mutate(posterior = likelihood * prior) %>%
+    mutate(posteriorstd = posterior / sum(posterior))
+)
+
+  d1 %>% 
+  ggplot(aes(x = probability, y = posterior)) +
+  geom_point() +
+  geom_line() +
+  labs(subtitle = "20 points",
+       x = "probability of water",
+       y = "posterior probability") +
+  theme()
+
+
+
+```
+The graph emmerges as the multiplication of three different lines that all go one direction.
+W, W, W, L.
+```{r}
+
+(
+  d2 <-
+    tibble(probability = seq(from = 0, to = 1, length.out = 20), 
+           prior = 1) %>%
+    mutate(likelihood = dbinom(3, size = 4, prob = probability)) %>%
+    mutate(posterior = likelihood * prior) %>%
+    mutate(posteriorstd = posterior / sum(posterior))
+)
+
+  d2 %>% 
+  ggplot(aes(x = probability, y = posterior)) +
+  geom_point() +
+  geom_line() +
+  labs(x = "probability of water",
+       y = "posterior probability") +
+  theme()
+```
+The inclusion of the land radically changes the probability. 
+L, W, W, L, W, W, W
+```{r}
+(
+  d3 <-
+    tibble(probability = seq(from = 0, to = 1, length.out = 20), 
+           prior = 1) %>%
+    mutate(likelihood = dbinom(5, size = 7, prob = probability)) %>%
+    mutate(posterior = likelihood * prior) %>%
+    mutate(posteriorstd = posterior / sum(posterior))
+)
+
+  d3 %>% 
+  ggplot(aes(x = probability, y = posteriorstd)) +
+  geom_point() +
+  geom_line() +
+  labs(subtitle = "20 points",
+       x = "probability of water",
+       y = "posterior probability") +
+  theme()
+```
+
+## Question 2 
+W, w, W.
+```{r}
+(
+  d4 <-
+    tibble(probability = seq(from = 0, to = 1, length.out = 20), 
+           prior = ifelse(probability <.5,0,1)) %>%
+    mutate(likelihood = dbinom(3, size = 3, prob = probability)) %>%
+    mutate(posterior = likelihood * prior) %>%
+    mutate(posteriorstd = posterior / sum(posterior))
+)
+
+  d4 %>% 
+  ggplot(aes(x = probability, y = posteriorstd)) +
+  geom_point() +
+  geom_line() +
+  labs(x = "probability of water",
+       y = "posterior probability") +
+  theme()
+
+```
+
+Second,
+W, W, W, L.
+```{r}
+(
+  d5 <-
+    tibble(probability = seq(from = 0, to = 1, length.out = 20), 
+           prior = ifelse(probability <.5,0,1)) %>%
+    mutate(likelihood = dbinom(3, size = 4, prob = probability)) %>%
+    mutate(posterior = likelihood * prior) %>%
+    mutate(posteriorstd = posterior / sum(posterior))
+)
+
+  d5 %>% 
+  ggplot(aes(x = probability, y = posteriorstd)) +
+  geom_point() +
+  geom_line() +
+  labs(x = "probability of water",
+       y = "posterior probability") +
+  theme()
+```
+
+
+Third
+L, W, W, L, W, W, W.
+```{r}
+(
+  d6 <-
+    tibble(probability = seq(from = 0, to = 1, length.out = 20), 
+           prior = ifelse(probability <.5,0,1)) %>%
+    mutate(likelihood = dbinom(5, size = 7, prob = probability)) %>%
+    mutate(posterior = likelihood * prior) %>%
+    mutate(posteriorstd = posterior / sum(posterior))
+)
+
+  d6 %>% 
+  ggplot(aes(x = probability, y = posteriorstd)) +
+  geom_point() +
+  geom_line() +
+  labs(x = "probability of water",
+       y = "posterior probability") +
+  theme()
+```
+
+
+## Question 3
+
+This is a pretty simple math question. The probability of Land given that it is the Earth Globe (Pr(Land|Earth)) There is a 50 percent probability that it is one either Mars or Earth. Pg 37 of Mcelreath pretty clearly sets up the parameters to prove this.
+
+
+## Question 4
+There are three different cards. 1) Black on both sides. 2) White on both sides 3) Black and White. Of the 6 possible scenarios for when the card was flipped, 3 of those are black. 1 of those is the scenario is card 3. The other two are the card with two black sides. That means in those 3 scenarios, there is 2/3rd chance that the other side would be black.
+
+
+## Question 5
+The logic for this one is relatively similar. Now there is 5 out of 8 scenarios where-in the card flipped over is black. Of those 5 there are 4 where the other side is black. 4/5 = .8
+
+## Question 6 
+
+This question adds an important prior. In this context it states that black/black is heavier, and thus less likely to be picked up. It adds an increased probability for other routes. There are still 2 iterations where-in the card pulled is black/black. However, there is now a prior which states that it is 2 times more likely for black/white to be picked. That means the likelihood of it being black/white is 2/4. There is also then a 2/4 probability for it to Black/Black
+
+
+## Question 7
+
+Given the fact that the first card is showing black the second card is showing white, there are only 8 different options. There are two iterations of the black/black. In each of those iterations, there are three possible worlds where-in the second could be white. That is both sides of the white/white, and the white side of the black/white. That would mean the counts result in 2x3=6. In the world that the first black card is the black side of black/white, then there is only two worlds which would allow the second card to be white. That is both sides of the White/White. That mean that count would be 1x2 = 2. 
+This would mean that 6 of 8 the possible worlds, the first card would be Black/Black. That is .75. 
+
+
