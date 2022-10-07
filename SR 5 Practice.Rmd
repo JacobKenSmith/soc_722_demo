@@ -80,8 +80,8 @@ Alright lets invent the data
 
 
 d <- tibble(preal = rnorm(100),
-            pfake = rnorm(100, preal),
-            outcome = rnorm(100, -preal))
+            pfake = rnorm(100, -preal),
+            outcome = rnorm(100, preal))
             
 ```
 
@@ -134,7 +134,7 @@ precis(m2)
 precis(m3)
 ```
 
-As evidenced by the M3, the second one is revealed to effect the outcome little. However, in m2 there is a seeming connection, which is only revaled to be spurious with the third iteration.
+As evidenced by the M3, the pfake is revealed to effect the outcome. However, in m2 there is a seeming connection, which is only revealed to be spurious with the third iteration.
 
 ## Question 2
 
@@ -195,12 +195,12 @@ precis(BM2)
 precis(LM1)
 ```
 
-AS evidenced by BM1 and BM2, the relationship is somewhat masked. In the case of B1, the different is pretty stark. With the mean going fromn -.03,  to .76. In the instance of B2, the connection is slightly less maked insofar as it goes from -.53 to -.88. This indicates that a bivariate model is an ineffective means of understanding the relationship between these variables and the outcome.
+AS evidenced by BM1 and BM2, the relationship is somewhat masked. In the case of B1, the different is pretty stark. With the mean going from -.03,  to .76. In the instance of B2, the connection is slightly less maked insofar as it goes from -.53 to -.88. This indicates that a bivariate model is an ineffective means of understanding the relationship between these variables and the outcome.
 
 
 ## Question 3
 
-This one asks why divorce data results in a higher marriage rate. This results happens because marriage rate isn't the unique variable insofar as it would track multiple marriagees for a single person. The way that you would resolve is to do a multiple regression that also includes remarriage rate after divorce.
+This one asks why divorce data results in a higher marriage rate. This results happens because marriage rate isn't the unique variable insofar as it would track multiple marriages for a single person. The way that you would resolve is to do a multiple regression that also includes remarriage rate after divorce.
 
 ## Question 4
 
@@ -208,7 +208,7 @@ Going to finish it after I get off work eta 7pm, even if you don't count it, I w
 
 
 ## Question 5
-This question asks how to deal with the multiple causation hypothesis regarding the relationship between price of gasoline vehicle and lower obesity rates.This would just be a 3 part multi-regession.G would represent price of Gasoline. W would be a variable which would represent amount walked. R would represent the amount eaten out at restaurants. You could also replace R with a variable C which refered to amount of food cooked at home.
+This question asks how to deal with the multiple causation hypothesis regarding the relationship between price of gasoline vehicle and lower obesity rates.This would just be a 3 part multi-regression.G would represent price of Gasoline. W would be a variable which would represent amount walked. R would represent the amount eaten out at restaurants. You could also replace R with a variable C which refereed to amount of food cooked at home.
 
 $$
 \begin {aligned}

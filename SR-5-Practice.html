@@ -461,8 +461,8 @@ all honesty. I am unsure of the reason for that.</p>
 <h2>Question 1</h2>
 <p>Alright lets invent the data</p>
 <pre class="r"><code>d &lt;- tibble(preal = rnorm(100),
-            pfake = rnorm(100, preal),
-            outcome = rnorm(100, -preal))</code></pre>
+            pfake = rnorm(100, -preal),
+            outcome = rnorm(100, preal))</code></pre>
 <p>now lets run a simple regression for both the variables</p>
 <pre class="r"><code>m1 &lt;- quap(
   alist(
@@ -500,24 +500,24 @@ m3 &lt;- quap(
     
   )</code></pre>
 <pre class="r"><code>precis(m1)</code></pre>
-<pre><code>##              mean         sd       5.5%      94.5%
-## a      0.01090713 0.08588749 -0.1263577  0.1481719
-## B1    -1.14876593 0.08680374 -1.2874951 -1.0100368
-## sigma  0.94800046 0.06667411  0.8414423  1.0545586</code></pre>
+<pre><code>##             mean         sd       5.5%      94.5%
+## a     -0.1997155 0.07824019 -0.3247585 -0.0746726
+## B1     0.7378441 0.08396862  0.6036460  0.8720421
+## sigma  0.8473059 0.05966779  0.7519453  0.9426666</code></pre>
 <pre class="r"><code>precis(m2)</code></pre>
-<pre><code>##              mean         sd        5.5%      94.5%
-## a      0.08734524 0.10849264 -0.08604695  0.2607374
-## B2    -0.55664423 0.07912749 -0.68310525 -0.4301832
-## sigma  1.29035996 0.09044968  1.14580389  1.4349160</code></pre>
+<pre><code>##             mean         sd       5.5%       94.5%
+## a     -0.1887319 0.09335229 -0.3379269 -0.03953692
+## B2    -0.2910810 0.07119998 -0.4048723 -0.17728963
+## sigma  1.0470725 0.07361910  0.9294150  1.16473006</code></pre>
 <pre class="r"><code>precis(m3)</code></pre>
-<pre><code>##              mean         sd       5.5%       94.5%
-## a      0.01427201 0.08623832 -0.1235535  0.15209750
-## B1    -1.10934214 0.12213945 -1.3045446 -0.91413970
-## B2    -0.03781832 0.08225781 -0.1692822  0.09364554
-## sigma  0.94855813 0.06678551  0.8418220  1.05529427</code></pre>
-<p>As evidenced by the M3, the second one is revealed to effect the
-outcome little. However, in m2 there is a seeming connection, which is
-only revaled to be spurious with the third iteration.</p>
+<pre><code>##             mean         sd          5.5%      94.5%
+## a     -0.1898850 0.07742236 -0.3136208799 -0.0661491
+## B1     0.8707205 0.11673974  0.6841478318  1.0572931
+## B2     0.1289427 0.08036536  0.0005033772  0.2573821
+## sigma  0.8334477 0.05875431  0.7395469588  0.9273484</code></pre>
+<p>As evidenced by the M3, the pfake is revealed to effect the outcome.
+However, in m2 there is a seeming connection, which is only revealed to
+be spurious with the third iteration.</p>
 </div>
 <div id="question-2-1" class="section level2">
 <h2>Question 2</h2>
@@ -562,23 +562,23 @@ BM2 &lt;- quap(alist(
   data = d2
 )</code></pre>
 <pre class="r"><code>precis(BM1)</code></pre>
-<pre><code>##              mean        sd         5.5%     94.5%
-## a     -0.05121687 0.1166031 -0.237571114 0.1351374
-## B1     0.20303707 0.1292787 -0.003575306 0.4096494
-## sigma  1.43345706 0.1003198  1.273126698 1.5937874</code></pre>
+<pre><code>##             mean         sd         5.5%      94.5%
+## a     -0.1111984 0.10947405 -0.286159082 0.06376227
+## B1     0.1865966 0.11754970 -0.001270546 0.37446371
+## sigma  1.2988952 0.09105771  1.153367429 1.44442304</code></pre>
 <pre class="r"><code>precis(BM2)</code></pre>
-<pre><code>##              mean         sd       5.5%       94.5%
-## a     -0.08055137 0.11152201 -0.2587851  0.09768235
-## B2    -0.39990149 0.09724072 -0.5553109 -0.24449203
-## sigma  1.34050080 0.09392107  1.1903968  1.49060482</code></pre>
-<pre class="r"><code>precis(LM1)</code></pre>
 <pre><code>##              mean         sd       5.5%      94.5%
-## a     -0.08391456 0.09595759 -0.2372733  0.0694442
-## B1     0.87625371 0.12911573  0.6699018  1.0826056
-## B2    -0.84582668 0.10298656 -1.0104191 -0.6812343
-## sigma  1.09139664 0.07697703  0.9683725  1.2144208</code></pre>
+## a     -0.06883012 0.10565316 -0.2376843  0.1000240
+## B2    -0.31627825 0.08810834 -0.4570924 -0.1754641
+## sigma  1.23860310 0.08681584  1.0998546  1.3773516</code></pre>
+<pre class="r"><code>precis(LM1)</code></pre>
+<pre><code>##             mean         sd       5.5%       94.5%
+## a     -0.1129009 0.08801372 -0.2535638  0.02776203
+## B1     0.9426385 0.12569202  0.7417583  1.14351859
+## B2    -0.8354013 0.09807460 -0.9921434 -0.67865912
+## sigma  0.9733192 0.06874523  0.8634510  1.08318735</code></pre>
 <p>AS evidenced by BM1 and BM2, the relationship is somewhat masked. In
-the case of B1, the different is pretty stark. With the mean going fromn
+the case of B1, the different is pretty stark. With the mean going from
 -.03, to .76. In the instance of B2, the connection is slightly less
 maked insofar as it goes from -.53 to -.88. This indicates that a
 bivariate model is an ineffective means of understanding the
@@ -588,7 +588,7 @@ relationship between these variables and the outcome.</p>
 <h2>Question 3</h2>
 <p>This one asks why divorce data results in a higher marriage rate.
 This results happens because marriage rate isn’t the unique variable
-insofar as it would track multiple marriagees for a single person. The
+insofar as it would track multiple marriages for a single person. The
 way that you would resolve is to do a multiple regression that also
 includes remarriage rate after divorce.</p>
 </div>
@@ -601,10 +601,10 @@ count it, I would love comments on it</p>
 <h2>Question 5</h2>
 <p>This question asks how to deal with the multiple causation hypothesis
 regarding the relationship between price of gasoline vehicle and lower
-obesity rates.This would just be a 3 part multi-regession.G would
+obesity rates.This would just be a 3 part multi-regression.G would
 represent price of Gasoline. W would be a variable which would represent
 amount walked. R would represent the amount eaten out at restaurants.
-You could also replace R with a variable C which refered to amount of
+You could also replace R with a variable C which refereed to amount of
 food cooked at home.</p>
 <p><span class="math display">\[
 \begin {aligned}
