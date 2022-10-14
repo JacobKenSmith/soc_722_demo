@@ -1,0 +1,403 @@
+---
+title: "Chapter 4 SR"
+output: html_document
+date: "2022-10-02"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(rethinking)
+library(tidybayes)
+library(splines)
+```
+
+## Easy Questions
+
+## Question 1
+Question 1 asked which of these lines is the likelihood. According to the chapter, it would be the first line yi ∼ Normal(µ, σ) because the latter two are priors.
+
+## QUestion 2 
+There are two parameters, that is the prior for µ and σ
+
+## Question 3
+
+$$
+\begin {aligned}
+Pr(\mu, \sigma | y) = \frac{\prod_{i}^{} Normal(y_i | \mu, \sigma)Normal(\mu|0, 10)Exponential(\sigma|1)}
+                 {\int \int \prod_{i}^{} Normal(y_i | \mu, \sigma)Normal(\mu|0, 10)Exponential(\sigma|1) d\mu d\sigma}
+\end{aligned}
+$$
+
+## Question 4
+
+This question asked for the linear model. In this instance it would be second line, as the first is the likelihood and the third through fifth is the priors.
+
+## Question 5
+
+As explained above, there are three parameters.
+
+
+### Medium Questions.
+
+## Question 1
+
+
+This question just asks us to simulate a prior prediction. All we have to do is now generate the data
+
+```{r}
+set.seed(15)
+
+sample_data <- 
+  tibble(
+  a = rnorm(n = 1000, mean = 0, sd = 10),
+  b = rexp(n = 1000, rate = 1),
+  y = rnorm(n = 1000, mean = a, sd = b),
+)
+#plot
+sample_data %>%
+  ggplot(aes(x = y)) +
+  geom_density(fill = "black") +
+  labs(x = "Y", y = "Density")
+
+
+```
+
+
+## Question 2
+
+The next question asks us to translate it into a quap formula.
+```{r}
+flist <- alist(mu = rnorm(0 , 10),
+              sigma = rexp(1),
+              y = rnorm( mu, sigma))
+    
+
+```
+
+
+##Question 3
+
+Question three asks us to turn it into a mathmatical model
+$$
+\begin{aligned}
+y &\sim \text{Normal}(\mu, \sigma) \\
+\mu &= \alpha + \beta x \\
+\alpha &\sim \text{Normal}(0, 10) \\
+\beta &\sim \text{Uniform}(0, 1) \\
+\sigma &\sim \text{Exponential}(1)
+\end{aligned}
+$$ 
+
+
+
+## Question 4
+
+It is relatively reasonable to assume that height is normally distributed, as evidenced by our conversation in class.
+
+I've chosen the prior of alpha to be 174, as it is the average height for 16 year old boys. I've put a standard deviation of 20 as to prevent any absurdly large outliers. I chose a Log Normal for Beta as explained on pg 96. This will prevent any negative changes in height, which are seemingly impossible unless we're predicting some maiming happening. The sigma is 30, which is a relatively weak prior, but would prevent having heigh ranges massively outside of reasonable sizes.
+
+$$
+\begin{aligned}
+h_i &\sim \text{Normal}(\mu, \sigma) \\
+\mu &= \alpha + \beta * x_i \\
+\alpha &\sim \text{Normal}(164, 20) \\
+\beta &\sim \text{LogNormal}(0, 1) \\
+\sigma &\sim \text{Uniform}(0,30)
+\end{aligned}
+$$ 
+
+## Question 5
+
+This wouldn't really change my analysis, as Log Normal already forced a positive growth rate.
+
+
+## QUestion 6
+
+Mcelreath has informed that that there must never more than a variance of 64,  As the variance is a square of sigma. It means that this must be the prior.
+$$
+\begin{aligned}
+\sigma &\sim \text{Uniform}(0,8)
+\end{aligned}
+$$
+as 8^2 =64.
+
+
+## Question 7
+Mcelreath wants us to look back at m4.3
+```{r}
+data("Howell1")
+d1 <- Howell1
+
+d1 <- d1 %>% 
+  filter(age >= 18) %>% 
+  mutate(weight_c = weight - mean(weight))
+
+  
+```
+
+
+```{r}
+set.seed(15)
+m4.3<- quap(
+  alist(
+      height ~ dnorm(mu, sigma),
+      mu <- a + b * weight_c,
+      a ~ dnorm(178, 20),
+      b ~ dlnorm(0, 1),
+      sigma ~ dunif(0, 50)
+),
+data = d1)
+
+# without the centering
+m4.3b<- quap(
+  alist(
+      height ~ dnorm(mu, sigma),
+      mu <- a + b * weight,
+      a ~ dnorm(178, 20),
+      b ~ dlnorm(0, 1),
+      sigma ~ dunif(0, 50)
+  ),
+  data = d1)
+```
+
+
+
+```{r}
+
+
+round(diag(vcov(m4.3)), 3)
+round(diag(vcov(m4.3b)), 3)
+
+```
+
+The covariation rate of alpha was increased by not centering. In the original version, I had a value of .073, and had a value of 3.602 without centering.
+
+If we look to if we look to the posterior predictions of both models we can see a little more.
+```{r}
+precis(m4.3)
+precis(m4.3b)
+```
+Within the 89% interval, it is evident that the non-centered has a smaller mean, as well as an interval which runs from 111.50 to 117.57. This smaller SD, results in a more narrow posterior distribution. The centered one, while having a smaller SD, its alpha is within a higher range.
+
+
+
+
+## Question 8
+
+```{r}
+
+
+data(cherry_blossoms)
+d <- cherry_blossoms
+rm(cherry_blossoms)
+
+```
+
+```{r}
+d %>% 
+  gather() %>% 
+  group_by(key) %>% 
+  summarise(mean = mean(value, na.rm = T),
+            sd   = sd(value, na.rm = T),
+            ll   = quantile(value, prob = .055, na.rm = T),
+            ul   = quantile(value, prob = .945, na.rm = T)) %>% 
+  mutate_if(is.double, round, digits = 2)
+
+d %>% 
+  ggplot(aes(x = year, y = doy)) +
+  geom_point(color = "#ffb7c5", alpha = 1/2) +
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        panel.background = element_rect(fill = "#4f455c"))
+
+```
+
+```{r}
+d %>% 
+  count(is.na(doy)) %>% 
+  mutate(percent = 100 * n / sum(n))
+
+```
+
+```{r}
+d2 <-
+  d %>% 
+  drop_na(doy)
+
+```
+
+Lets reproduce the original
+
+
+
+
+```{r}
+
+
+num_knots <- 15
+knot_list <- quantile(d2$year, probs = seq(from = 0, to = 1, length.out = num_knots))
+```
+
+```{r}
+B <- bs(d2$year,
+        knots = knot_list[-c(1, num_knots)], 
+        degree = 3, 
+        intercept = TRUE)
+
+
+
+plot(NULL,xlim=range(d2$year),ylim=c(0,1),xlab="year",ylab="basis")
+for (i in 1:ncol(B)) lines(d2$year,B[,i])
+
+```
+
+
+```{r}
+m4.7  <-quap(
+alist(
+D ~dnorm(mu,sigma),
+mu <-a+B%*%w,
+a ~dnorm(100,10),
+w ~dnorm(0,10),
+sigma ~dexp(1)
+), data=list(D=d2$doy,B=B),
+start=list( w=rep(0,ncol(B))))
+```
+
+```{r}
+post  <-extract.samples(m4.7)
+w <-apply(post$w,2,mean)
+plot( NULL,xlim=range(d2$year),ylim=c(-6,6),
+xlab="year" ,ylab="basis*weight")
+for (i in 1:ncol(B))lines(d2$year,w[i]*B[,i])
+```
+
+```{r}
+mu  <-link(m4.7)
+mu_PI <-apply(mu,2,PI,0.97)
+plot( d2$year,d2$doy,col=col.alpha(rangi2,0.3),pch=16)
+shade( mu_PI,d2$year,col=col.alpha("black",0.5))
+```
+
+
+
+Now, I want to increase the number of knotes
+
+```{r}
+num_knotsA <- 25
+knot_listA <- quantile(d2$year, probs = seq(from = 0, to = 1, length.out = num_knotsA))
+
+```
+
+
+```{r}
+
+
+C <- bs(d2$year,
+        knots = knot_listA[-c(1, num_knotsA)], 
+        degree = 3, 
+        intercept = TRUE)
+
+
+
+plot(NULL,xlim=range(d2$year),ylim=c(0,1),xlab="year",ylab="basis")
+for (i in 1:ncol(C)) lines(d2$year,C[,i])
+```
+
+
+```{r}
+m4.7A  <-quap(
+alist(
+D ~dnorm(mu,sigma),
+mu <-a+C%*%w,
+a ~dnorm(100,10),
+w ~dnorm(0,10),
+sigma ~dexp(1)
+), data=list(D=d2$doy,C=C),
+start=list( w=rep(0,ncol(C))))
+```
+
+```{r}
+postA  <-extract.samples(m4.7A)
+w <-apply(postA$w,2,mean)
+plot( NULL,xlim=range(d2$year),ylim=c(-6,6),
+xlab="year" ,ylab="basis*weight")
+for (i in 1:ncol(C))lines(d2$year,w[i]*C[,i])
+```
+
+```{r}
+mu  <-link(m4.7A)
+mu_PI <-apply(mu,2,PI,0.97)
+plot( d2$year,d2$doy,col=col.alpha(rangi2,0.3),pch=16)
+shade( mu_PI,d2$year,col=col.alpha("black",0.5))
+```
+
+
+
+
+Now let us increase the standard deviation on the width.
+
+```{r}
+num_knotsB <- 15
+knot_listB <- quantile(d2$year, probs = seq(from = 0, to = 1, length.out = num_knotsA))
+
+```
+
+
+```{r}
+
+
+E <- bs(d2$year,
+        knots = knot_listB[-c(1, num_knotsB)], 
+        degree = 3, 
+        intercept = TRUE)
+
+
+
+plot(NULL,xlim=range(d2$year),ylim=c(0,1),xlab="year",ylab="basis")
+for (i in 1:ncol(E)) lines(d2$year,E[,i])
+```
+
+
+```{r}
+m4.7B  <-quap(
+alist(
+D ~dnorm(mu,sigma),
+mu <-a+E%*%w,
+a ~dnorm(100,10),
+w ~dnorm(0,10),
+sigma ~dexp(100)
+), data=list(D=d2$doy,E=E),
+start=list( w=rep(0,ncol(E))))
+```
+
+```{r}
+postB  <-extract.samples(m4.7B)
+w <-apply(postB$w,2,mean)
+plot( NULL,xlim=range(d2$year),ylim=c(-6,6),
+xlab="year" ,ylab="basis*weight")
+for (i in 1:ncol(E))lines(d2$year,w[i]*E[,i])
+```
+
+```{r}
+mu  <-link(m4.7B)
+mu_PI <-apply(mu,2,PI,0.97)
+plot( d2$year,d2$doy,col=col.alpha(rangi2,0.3),pch=16)
+shade( mu_PI,d2$year,col=col.alpha("black",0.5))
+```
+
+
+
+I'm still somewhat unsure on the technical of the splines, but it seems as it both the increase in knots and width makes it more curvy/wiggly? Although the second two are pretty similar, there seems to be some difference around 1600-1800. In the third iteration with more knots, there is a small drop in basis, while that doesn't happen in the second. 
+
+
+
+
+
+
+
+
