@@ -1,0 +1,157 @@
+---
+title: "Chapter 8 Homework"
+output: html_document
+date: "2022-10-14"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r}
+library(rethinking) 
+library(tidyverse)
+library(sjPlot)
+
+```
+
+## Easy Question
+
+### Question 1
+This one asks us to figure out some interactions. 
+
+1) Bread dough rises because of yeast. It would be easy to add temperature to this to make an interaction. Yeast tends to need to be anywhere from 100 degree to 130 depending on the type of yeast. Sugar/Honey is also necessary to activate yeast, and thus is another element
+
+2) Education increases income. Quality of Education could be one element, as those who went to Harvard have different incomes tan state schools. Gender or race could easily be other elements.
+
+3) Gasoline makes a car go. Lots of elements that could exist here. The mileage of any vehicle would impact how far a single unit of gasoline would make a car go. A broken transmission would also inform that.
+
+## Question 2
+This one asks us which of these invoke an interaction, which is to say which of these produce an effect in combination not independently. 
+
+The only case where there is an interaction is example #1 because it is only the instance where-in the relationship isn't additive.
+
+
+## Question 3
+
+Option 1 - Caramelization
+C = caramerlization H = heat D = Dry out
+$$
+\begin{aligned}
+
+
+C = \alpha + \beta_h H + \beta_D D + \beta_{HD}(H*D)
+
+\end{aligned}
+
+$$
+Option 2 - Car
+
+S = Speech C = Cylinder I = Injector
+$$
+\begin{aligned}
+
+
+S = \alpha + \beta_C C + \beta_I I 
+
+\end{aligned}
+
+$$
+Option 3
+
+B = Political belief P = Parent F = Friend
+$$
+\begin{aligned}
+
+
+B = \alpha + \beta_P P + \beta_F F 
+
+\end{aligned}
+
+$$
+Option 4
+I = Intelligent Species S = Social M = Appendages
+$$
+\begin{aligned}
+
+
+I = \alpha + \beta_S S + \beta_M M 
+
+\end{aligned}
+
+$$
+
+## Medium Question
+
+### Question 1  
+This just seems like three-way interaction. In this case blooming is dependent on an interaction between water and shade. Those two are then influenced by temperature.
+
+### Question 2
+For this one you can just take the equation found on pg 256 and multiply it by (1-temperature). Temperature in this instance would just be 1 if hot and 0 if not. This would just cancel out all other effects if it was hot, thus zeroing it out.
+
+$$
+\begin{aligned}
+
+b = (\alpha + \beta_W W_i + \beta_S S_i + B_{WS} S_i W_i)  (1-temperature)
+ 
+\end{aligned}
+
+$$
+
+### Question 3
+Lets think about some ravens, wolves and prey.
+
+lets hypothesize this relationship as a relatively simple one. Wolves eat prey. Prey are distributed normally with a mean of 150 and a sigma of 35. Raven's are premised upon prey. Raven's are premised upon an interaction between the two. This would indicate that the existence of ravens is premised upon an interaction between both wolves and ravens. This seems to be relatively linear. However, It would not exist if only one of the two predictor vairables did not exist
+
+
+
+```{r}
+
+set.seed(1337)
+
+ravensim <- tibble(
+    prey = rnorm (1000, 150,  35),
+    wolf =  rnorm(1000, 5 * prey, 5),
+    raven = rnorm(1000, .2*prey + wolf *.3 + prey*wolf*.5, 10),
+)
+
+
+rsim2 <- lm(raven ~ prey * wolf , 
+          data = ravensim)
+
+
+sjPlot::plot_model(rsim2, type = "int") +
+  labs(title = "likely number of ravens", x = "Preys", y = "Ravens") +
+  scale_color_discrete(
+    labels = c("Little Wolfs", "lots o wolfs"))
+```
+
+
+One interesting thing that I'm a little confused about is that if I change the number for prey to lets say 60, the graph's direction looks wildly different.
+
+```{r}
+
+set.seed(1337)
+
+ravensim <- tibble(
+    prey = rnorm (1000, 80,  35),
+    wolf =  rnorm(1000, 5 * prey, 5),
+    raven = rnorm(1000, .2*prey + wolf *.3 + prey*wolf*.5, 10),
+)
+
+
+rsim2 <- lm(raven ~ prey * wolf , 
+          data = ravensim)
+
+
+sjPlot::plot_model(rsim2, type = "int") +
+  labs(title = "likely number of ravens", x = "Preys", y = "Ravens") +
+  scale_color_discrete(
+    labels = c("Little Wolfs", "lots o wolfs"))
+```
+
+## Question 4
+
+WOrking on this one but my brain is in COVID-Fog mode, so drawing a blank.
