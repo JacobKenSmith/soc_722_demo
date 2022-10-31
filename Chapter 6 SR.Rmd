@@ -1,0 +1,134 @@
+---
+title: "Work Doc for Class"
+author: "Jacob Smith"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(dagitty)
+library(tidyverse)
+library(rethinking)
+```
+
+### Easy Questions
+
+## Question 1
+
+This questions asks what mechanism will cause multiple regressions to produce false inferences.
+
+These are MultiCollinearity, Post-Treatment Bias, and Collider Bias.
+
+## Question 2
+
+For this question, I'm going to select post-treatment bias as the example which to analyze. If was wanting to study whether or income results in increased extremist tendencies towards the environmental destruction, but i wanted to exclude regional information that might describe proximity near environmental catastrophe. In this case, income would influence where one lives, and thus I wouldn't get a hollistic picture on the myriad of ways that income influences extremist sentiments.
+
+
+## Question 3
+
+1. Pipe
+
+```{r}
+dagitty("dag{
+        A -> B -> C}") |> 
+  impliedConditionalIndependencies()
+
+
+
+```
+This would be a case where discussions of post-treatment bias would come into play. A influences B which influences C. If we condition on Z, then we block the path from A to C
+
+2. Fork
+```{r}
+dagitty("dag{
+        A <- B -> C}") %>% 
+  impliedConditionalIndependencies()
+
+```
+In this example, If we condition on B, then learning A tells us nothing about C. A and C are independent, conditional on C
+
+
+3. Collider
+```{r}
+dagitty("dag{
+        A -> B <- C}") %>% 
+  impliedConditionalIndependencies()
+
+```
+There is no relationship between A and C, unless condition on B.Conditioning on B "opens the path", but doesn't indicate any causal relationship.
+
+
+4. Descendant 
+```{r}
+dagitty("dag{
+        A -> B -> C
+        B -> D}") %>% 
+  impliedConditionalIndependencies()
+
+```
+
+This is a descendent which is a variable influenced by another variable that is also influenced by atleast two other vriables. In this example, conditioning on a descendents reuslts in a condition on its parents. So in this isntance, Conditioning on D also conditions on B, thus opening the path to A and C.
+
+
+## Question 4
+
+If we assume the collider as A -> B <- C. Conditioning on B opens a path, yet one that might lead to wrong assumptions. These are called spurious associations. The beginning of the chapter gives the example of newsworthiness vs trustworthiness as criteria for review of academic work. McElreath states that if both are included as criteria, then the overall average of trustworthy studies goes down because more newsworthy studies can get published due to a higher overall score.
+
+### Medium Questions
+
+## Question 1
+
+```{r}
+dag_6.1 <- dagitty( "dag {
+  U [unobserved] 
+  V [unobserved] 
+  X -> Y 
+  X <- U <- A -> C -> Y 
+  U -> B <- C 
+  C <- V -> Y
+  }  ") 
+adjustmentSets( dag_6.1 , exposure="X" , outcome="Y" )
+
+```
+Let us look at the options. The most obvious path is X -> Y, but there is obviously more than that.  Lets go through the route that goes through B. There are two paths in this sense, one involves C -> Y and one involves C <- V ->. Both of these are closed because B operates as a Collider. There are two which go through A. The first involves C acting as a collider between A and V, which closes it off. The last one can be read as X <- U <- A -> C -> Y. If we want to close this path, then we would naturally just conditon on A. 
+
+
+## Question 2
+
+So this an interesting question which asks us to move from the theoretical realm to the simulated.
+
+```{r}
+Dag_Sum <- tibble(C = rnorm(1000),  
+                  D = rnorm(1000, C, 0.2), 
+                  E = rnorm(1000, D, .1)) 
+
+```
+
+
+```{r}
+QM2 <- alist(
+      E ~ dnorm(mu, sigma), 
+      mu <- a + bC*C + bD*D, 
+      a ~ dnorm(0, 0.2), 
+      bC ~ dnorm(0, 0.5), 
+      bD ~ dnorm(0, 0.5),
+      sigma ~ dexp(1)) |> 
+  quap(data = Dag_Sum)
+```
+
+```{r}
+QM2 |>  precis()
+```
+
+
+```{r}
+QM2 |>  precis() |> 
+  as_tibble(rownames = "estimate")
+ 
+```
+
+We've successfully failed! We've reproduced the same problem that that McElreath noted. Conditioning upon D, hides the effects effects of B. This results in the estimate of the mean for Bc to be approaching zero. 
