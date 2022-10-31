@@ -122,7 +122,7 @@ rsim2 <- lm(raven ~ prey * wolf ,
           data = ravensim)
 
 
-sjPlot::plot_model(rsim2, type = "int") +
+plot_model(rsim2, type = "int") +
   labs(title = "likely number of ravens", x = "Preys", y = "Ravens") +
   scale_color_discrete(
     labels = c("Little Wolfs", "lots o wolfs"))
@@ -146,7 +146,7 @@ rsim2 <- lm(raven ~ prey * wolf ,
           data = ravensim)
 
 
-sjPlot::plot_model(rsim2, type = "int") +
+plot_model(rsim2, type = "int") +
   labs(title = "likely number of ravens", x = "Preys", y = "Ravens") +
   scale_color_discrete(
     labels = c("Little Wolfs", "lots o wolfs"))
