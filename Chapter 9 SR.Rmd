@@ -1,0 +1,274 @@
+---
+title: "Untitled"
+output: html_document
+date: "2022-11-04"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+
+```
+
+```{r}
+
+library(rethinking)
+library(rstan)
+
+```
+
+### Easy Questions
+
+## Question 1
+Of these three options, only the third is true. The proposal distribution must be symmetric. If you wanted to use assmyetric proposals then you would have to use either Gibbs sampling or metropolis-hastings.
+
+## Question 2
+Gibbs sampling tends to be a bit more efficient because it uses adaptive proposal that relies upon the distribution parameter values adjusting themselves.As 9.2.2 indicates there are some limitations. First, you might not necessarily want to use conjugate pairs, a necessary element of the efficiency. Second, Metropolis and Gibbs but get inefficient when models become complex because they get caught up within small areas of the posterior, potentially missing other parts.
+
+## Question 3 
+
+Hamiltonian Monte Carlo can not deal with discrete parameters because the physics simulation it runs requires continuous parameters for the imaginary particle to "glide" over.
+
+## Question 4
+N_EFF just references to an estimate of effective samples.This can in certain instances be longer the length of the chain. McElreath argues that the estimate is usually better than raw-number cause they're misleading. n_eff is almost always smaller  than the raw number because the number of samples will always be less than the sheer number of data points.
+
+## Question 5
+Rhat should always be approaching 1 from above.
+
+## Question 6
+Alrighty, lets create a good trace plot.
+
+First I'm going to have to create a data-set. Let us use a similar one the one in the book
+
+```{r}
+y <- c(-5, 5)
+
+set.seed(1337)
+Chaintest1 <- ulam(
+  alist(
+    y ~ dnorm(mu, sigma),
+    mu <- alpha1,
+    alpha1 ~ dnorm(0, 2000),
+    sigma ~ dexp(0.0001)
+  ),
+  data = list(y = y), chains = 3, cores = 4
+)
+
+```
+
+
+```{r}
+y <- c(-5, 5)
+
+set.seed(1337)
+Chaintest2 <- ulam(
+  alist(
+    y ~ dnorm(mu, sigma),
+    mu <- alpha1,
+    alpha1 ~ dnorm(0, 10),
+    sigma ~ dunif(0,1)
+  ),
+  data = list(y = y), chains = 3, cores = 4
+)
+```
+
+```{r}
+traceplot(Chaintest1)
+traceplot(Chaintest2)
+```
+
+Simply, these trace plots are indicative of the ability for the chain to converge. In the latter example, the trace plot reveals the lines getting caught up in some absurd values. 
+
+## Question 7
+This is pretty similar. I just run through the same ones  through the trankplot function. I tend to find these a little less readable than trace-plots but they show the same general idea. The first one corveges while the second one doesn't
+```{r}
+trankplot(Chaintest1)
+trankplot(Chaintest2)
+```
+
+
+## Medium Questions
+## Question 1
+Lets get the data from the book. 
+```{r}
+data(rugged) 
+d <- rugged 
+d$log_gdp <- log(d$rgdppc_2000) 
+dd <- d[complete.cases(d$rgdppc_2000) , ] 
+dd$log_gdp_std <- (dd$log_gdp / mean(dd$log_gdp)) 
+
+dd$rugged_std <- dd$rugged / max(dd$rugged) 
+dd$cid <- ifelse( dd$cont_africa==1 , 1 , 2 )
+```
+
+Time to slim it down.
+```{r}
+dat_slim <- list( 
+  log_gdp_std = dd$log_gdp_std, 
+  rugged_std = dd$rugged_std, 
+  cid = as.integer( dd$cid ) ) 
+str(dat_slim)
+```
+
+Alright, let us take the original version.
+```{r message=FALSE, warning=FALSE}
+Ruggedexp <- ulam( 
+  alist( 
+    log_gdp_std ~ dnorm( mu , sigma ) , 
+    mu <- a[cid] + b[cid]*( rugged_std - 0.215 ) , 
+    a[cid] ~ dnorm( 1 , 0.1 ) , 
+    b[cid] ~ dnorm( 0 , 0.3 ) , 
+    sigma ~ dexp(1 ) ) , 
+  data=dat_slim , chains=4 , cores=4 )
+```
+
+Time to change the sigma to be distributed uniformly.
+```{r}
+Rugged9unif <- ulam( 
+  alist( 
+    log_gdp_std ~ dnorm( mu , sigma ) , 
+    mu <- a[cid] + b[cid]*( rugged_std - 0.215 ) ,   
+    a[cid] ~ dnorm( 1 , 0.1 ) , 
+    b[cid] ~ dnorm( 0 , 0.3 ) , 
+    sigma ~ dunif(0, 1 ) ) , 
+  data=dat_slim , chains=4 , cores=4 )
+```
+
+lets run it through a precis
+```{r}
+precis(Ruggedexp, depth = 2)
+precis(Rugged9unif, depth = 2)
+```
+There is seemingly no difference. Indicating the data overran the priors.
+
+## Question 2
+Let us change another prior.
+```{r}
+Ruggedbcidexp <- ulam( 
+  alist( 
+    log_gdp_std ~ dnorm( mu , sigma ) , 
+    mu <- a[cid] + b[cid]*( rugged_std - 0.215 ) ,   
+    a[cid] ~ dnorm( 1 , 0.1 ) , 
+    b[cid] ~ dexp(0.3 ) , 
+    sigma ~ dexp(1 ) ) , 
+  data=dat_slim , chains=4 , cores=4 )
+```
+
+Lets look at it again.
+```{r}
+precis(Ruggedbcidexp, depth = 2)
+precis(Ruggedexp, depth = 2)
+
+```
+
+So the difference is pretty clear. it moved the posterior distribution to all positive numbers. This is because the exp function only returns positive values.
+
+## Question 3 
+I'm going to be a bit lazy here and use the same model i've been using.
+
+
+Let us start with a small number.
+```{r}
+Rugged_20 <- ulam( 
+  alist( 
+    log_gdp_std ~ dnorm( mu , sigma ) , 
+    mu <- a[cid] + b[cid]*( rugged_std - 0.215 ) ,   a[cid] ~ dnorm( 1 , 0.1 ) , 
+    b[cid] ~ dnorm( 0 , 0.3 ) , 
+    sigma ~ dexp(1 ) ) , 
+  data=dat_slim , warmup = 10, iter = 5000, chains=4 , cores=4 )
+```
+
+How about 40?
+```{r}
+Rugged_40 <- ulam( 
+  alist( 
+    log_gdp_std ~ dnorm( mu , sigma ) , 
+    mu <- a[cid] + b[cid]*( rugged_std - 0.215 ) ,   a[cid] ~ dnorm( 1 , 0.1 ) , 
+    b[cid] ~ dnorm( 0 , 0.3 ) , 
+    sigma ~ dexp(1 ) ) , 
+  data=dat_slim , warmup = 40, iter = 5000, chains=4 , cores=4 )
+```
+What about 100?
+```{r}
+
+Rugged_100 <- ulam( 
+  alist( 
+    log_gdp_std ~ dnorm( mu , sigma ) , 
+    mu <- a[cid] + b[cid]*( rugged_std - 0.215 ) ,   a[cid] ~ dnorm( 1 , 0.1 ) , 
+    b[cid] ~ dnorm( 0 , 0.3 ) , 
+    sigma ~ dexp(1 ) ) , 
+  data=dat_slim , warmup = 100, iter = 5000, chains=4 , cores=4 )
+```
+
+What about 250?
+```{r}
+Rugged_250 <- ulam( 
+  alist( 
+    log_gdp_std ~ dnorm( mu , sigma ) , 
+    mu <- a[cid] + b[cid]*( rugged_std - 0.215 ) ,   a[cid] ~ dnorm( 1 , 0.1 ) , 
+    b[cid] ~ dnorm( 0 , 0.3 ) , 
+    sigma ~ dexp(1 ) ) , 
+  data=dat_slim , warmup = 250, iter = 5000, chains=4 , cores=4 )
+```
+
+What about 500?
+```{r}
+Rugged500 <- ulam( 
+  alist( 
+    log_gdp_std ~ dnorm( mu , sigma ) , 
+    mu <- a[cid] + b[cid]*( rugged_std - 0.215 ) ,   a[cid] ~ dnorm( 1 , 0.1 ) , 
+    b[cid] ~ dnorm( 0 , 0.3 ) , 
+    sigma ~ dexp(1 ) ) , 
+  data=dat_slim , warmup = 500, iter = 5000, chains=4 , cores=4 )
+```
+
+Why not 1000?
+```{r}
+Rugged_1000 <- ulam( 
+  alist( 
+    log_gdp_std ~ dnorm( mu , sigma ) , 
+    mu <- a[cid] + b[cid]*( rugged_std - 0.215 ) ,   a[cid] ~ dnorm( 1 , 0.1 ) , 
+    b[cid] ~ dnorm( 0 , 0.3 ) , 
+    sigma ~ dexp(1 ) ) , 
+  data=dat_slim , warmup = 1000, iter = 5000, chains=4 , cores=4 )
+```
+
+Ok, but what about 2500?
+
+```{r}
+Rugged_2500 <- ulam( 
+  alist( 
+    log_gdp_std ~ dnorm( mu , sigma ) , 
+    mu <- a[cid] + b[cid]*( rugged_std - 0.215 ) ,   a[cid] ~ dnorm( 1 , 0.1 ) , 
+    b[cid] ~ dnorm( 0 , 0.3 ) , 
+    sigma ~ dexp(1 ) ) , 
+  data=dat_slim , warmup = 2500, iter = 5000, chains=4 , cores=4 )
+```
+
+Fuck it, lets do 4000.
+```{r}
+Rugged4000 <- ulam( 
+  alist( 
+    log_gdp_std ~ dnorm( mu , sigma ) , 
+    mu <- a[cid] + b[cid]*( rugged_std - 0.215 ) ,   a[cid] ~ dnorm( 1 , 0.1 ) , 
+    b[cid] ~ dnorm( 0 , 0.3 ) , 
+    sigma ~ dexp(1 ) ) , 
+  data=dat_slim , warmup = 4000, iter = 5000, chains=4 , cores=4 )
+```
+
+Lets look at these examples.
+
+```{r}
+
+precis(Rugged_20, depth = 2)
+precis(Rugged_40, depth = 2)
+precis(Rugged_100, depth = 2)
+precis(Rugged_250, depth = 2)
+precis(Rugged500, depth = 2)
+precis(Rugged_1000, depth = 2)
+precis(Rugged_2500, depth = 2)
+precis(Rugged4000, depth = 2)
+```
+
+So the results of this are kind of interesting. 20 warmup is obviously not enough as indicative of the low n_eff and rhat numbers.40 iterations seems solid, but the n_eff numbers for b[1] are still pretty low in this instance. 100 is similar. At 250, you get a pretty decent amount. 1000is relatively similar. Interestingly, 2500 and 4000 tend to have lower n_eff, which makes sense.
