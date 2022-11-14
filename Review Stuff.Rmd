@@ -1,0 +1,20 @@
+---
+title: "Stuff to review"
+author: "Jacob Smith"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+I feel comfortable with most of the theoretical justifcations for the stuff we're doing but lose the thread on some of the metrics/graphing aspects.
+So I generally feel as i'm lacking on a few fronts.
+
+1st - I'm generally uncomfortable in graphing some of the outputs that we get. I can do the basic stuff but some of the advanced comparisons/metrics elludes me.
+
+2nd - I would love a thorough run through of each of the metrics that we've covered in class to evaluate a regression. I'm comfortable on some, but not necessarily comfortable on others. 
+
+3rd - I would appreciate some more indepth discussion on the intricacies of rstanarm, as it seems to be way more helpful. 
+

@@ -541,20 +541,20 @@ theoretical realm to the simulated.</p>
       sigma ~ dexp(1)) |&gt; 
   quap(data = Dag_Sum)</code></pre>
 <pre class="r"><code>QM2 |&gt;  precis()</code></pre>
-<pre><code>##               mean          sd        5.5%         94.5%
-## a     -0.005602967 0.003294359 -0.01086799 -0.0003379447
-## bC     0.006584705 0.016017305 -0.01901404  0.0321834515
-## bD     0.991405429 0.015626469  0.96643131  1.0163795442
-## sigma  0.104123566 0.002327141  0.10040434  0.1078427876</code></pre>
+<pre><code>##                mean          sd         5.5%       94.5%
+## a     -0.0009893438 0.003220413 -0.006136185 0.004157498
+## bC    -0.0164803348 0.016612752 -0.043030720 0.010070051
+## bD     1.0157937320 0.016494792  0.989431869 1.042155595
+## sigma  0.1018355516 0.002275765  0.098198439 0.105472664</code></pre>
 <pre class="r"><code>QM2 |&gt;  precis() |&gt; 
   as_tibble(rownames = &quot;estimate&quot;)</code></pre>
 <pre><code>## # A tibble: 4 × 5
-##   estimate     mean      sd  `5.5%`   `94.5%`
-##   &lt;chr&gt;       &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;     &lt;dbl&gt;
-## 1 a        -0.00560 0.00329 -0.0109 -0.000338
-## 2 bC        0.00658 0.0160  -0.0190  0.0322  
-## 3 bD        0.991   0.0156   0.966   1.02    
-## 4 sigma     0.104   0.00233  0.100   0.108</code></pre>
+##   estimate      mean      sd   `5.5%` `94.5%`
+##   &lt;chr&gt;        &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;   &lt;dbl&gt;
+## 1 a        -0.000989 0.00322 -0.00614 0.00416
+## 2 bC       -0.0165   0.0166  -0.0430  0.0101 
+## 3 bD        1.02     0.0165   0.989   1.04   
+## 4 sigma     0.102    0.00228  0.0982  0.105</code></pre>
 <p>We’ve successfully failed! We’ve reproduced the same problem that
 that McElreath noted. Conditioning upon D, hides the effects effects of
 B. This results in the estimate of the mean for Bc to be approaching
